@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="mk" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>LuxStay — Гости</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 24px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .nav-links { display: flex; align-items: center; gap: 40px; }
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+
+        .page-header { padding: 60px 60px 40px; }
+        .page-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 48px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .section-line {
+            width: 60px;
+            height: 1px;
+            background: var(--gold);
+            margin: 20px 0 40px;
+        }
+
+        .admin-container { padding: 0 60px 100px; }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--gold);
+        }
+
+        .source-tag {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        thead { border-bottom: 1px solid var(--border); }
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 400;
+        }
+        td {
+            padding: 14px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(212, 175, 55, 0.02); }
+
+        .badge {
+            padding: 4px 12px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+        }
+
+        .badge-vip {
+            border-color: var(--gold);
+            color: var(--gold);
+        }
+        .badge-regular {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        .badge-new {
+            border-color: var(--muted);
+            color: var(--muted);
+        }
+
+        .stars {
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-brand">LuxStay</a>
+    <div class="nav-links">
+        <a href="/admin">Dashboard</a>
+        <a href="/admin/guests" class="active">Гости</a>
+        <a href="/admin/reports">Извештаи</a>
+        <span style="color:var(--muted); font-size:13px;">
+            <span sec:authentication="name"></span>
+        </span>
+        <a href="/logout" style="border:1px solid var(--gold); color:var(--gold); padding:10px 24px;">
+            Одјави се
+        </a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <h1 class="page-title">Гости</h1>
+    <div class="section-line"></div>
+</div>
+
+<div class="admin-container">
+
+    <div class="section-header">
+        <div>
+            <span class="section-title">Историја на гости</span>
+            <span class="source-tag">Guest_Reservation_History View</span>
+        </div>
+    </div>
+
+    <!--
+        Guest_Reservation_History колони:
+        [0] guest_id
+        [1] guest_name
+        [2] nationality
+        [3] total_reservations
+        [4] total_spent
+        [5] average_rating
+    -->
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Гостин</th>
+            <th>Националност</th>
+            <th>Резервации</th>
+            <th>Вкупно потрошено</th>
+            <th>Просечна оценка</th>
+            <th>Категорија</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="row : ${guestHistory}">
+            <td style="color:var(--muted);">#<span th:text="${row[0]}"></span></td>
+            <td th:text="${row[1]}"></td>
+            <td style="color:var(--muted);" th:text="${row[2]}"></td>
+            <td th:text="${row[3]}"></td>
+            <td style="color:var(--gold);">
+                <span th:text="${row[4] != null ? #numbers.formatDecimal(row[4], 1, 2) + ' €' : '0.00 €'}"></span>
+            </td>
+            <td>
+                <span class="stars"
+                      th:text="${row[5] != null ? #numbers.formatDecimal(row[5], 1, 1) + ' ★' : '—'}">
+                </span>
+            </td>
+            <td>
+                <span th:if="${row[3] != null and row[3] >= 3}"
+                      class="badge badge-vip">VIP Гостин</span>
+                <span th:if="${row[3] != null and row[3] == 2}"
+                      class="badge badge-regular">Редовен</span>
+                <span th:if="${row[3] == null or row[3] <= 1}"
+                      class="badge badge-new">Нов гостин</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<footer>
+    <p>© 2024 LuxStay Hotel — Сите права задржани</p>
+</footer>
+
+</body>
+</html>

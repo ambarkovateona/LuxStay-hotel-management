@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="mk" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+  <meta charset="UTF-8">
+  <title>LuxStay — Соби</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    nav {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 24px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      color: var(--gold);
+      letter-spacing: 3px;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover { color: var(--gold); }
+
+    .btn-nav {
+      border: 1px solid var(--gold);
+      color: var(--gold) !important;
+      padding: 10px 24px;
+    }
+
+    .btn-nav:hover {
+      background: var(--gold) !important;
+      color: var(--bg) !important;
+    }
+
+    .page-header {
+      padding: 80px 60px 40px;
+      text-align: center;
+    }
+
+    .page-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 52px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .section-line {
+      width: 60px;
+      height: 1px;
+      background: var(--gold);
+      margin: 0 auto 20px;
+    }
+
+    /* Search */
+    .search-section {
+      max-width: 800px;
+      margin: 0 auto 60px;
+      padding: 0 60px;
+    }
+
+    .search-box {
+      background: var(--card);
+      border: 1px solid var(--border);
+      padding: 30px 40px;
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 20px;
+      align-items: end;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .form-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .form-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 12px 16px;
+      font-family: 'Jost', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .form-input:focus { border-color: var(--gold); }
+
+    .btn-search {
+      background: transparent;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 12px 30px;
+      font-family: 'Jost', sans-serif;
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: all 0.3s;
+      white-space: nowrap;
+    }
+
+    .btn-search:hover {
+      background: var(--gold);
+      color: var(--bg);
+    }
+
+    /* Rooms Grid */
+    .rooms-section {
+      padding: 0 60px 100px;
+    }
+
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 30px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .room-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      transition: border-color 0.3s, transform 0.3s;
+    }
+
+    .room-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-5px);
+    }
+
+    .room-card-img {
+      height: 200px;
+      background: #252525;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .room-card-img i {
+      font-size: 50px;
+      color: var(--border);
+    }
+
+    .room-card-body { padding: 28px; }
+
+    .room-type {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 22px;
+      letter-spacing: 2px;
+      margin-bottom: 6px;
+    }
+
+    .room-desc {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.8;
+      margin-bottom: 16px;
+    }
+
+    .room-info {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 16px;
+    }
+
+    .room-info span {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    .amenities {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 20px;
+    }
+
+    .amenity-tag {
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 3px 10px;
+      font-size: 10px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .room-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .room-price {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 26px;
+      color: var(--gold);
+    }
+
+    .room-price span {
+      font-size: 13px;
+      color: var(--muted);
+      font-family: 'Jost', sans-serif;
+    }
+
+    .btn-reserve {
+      border: 1px solid var(--gold);
+      color: var(--gold);
+      padding: 10px 22px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .btn-reserve:hover {
+      background: var(--gold);
+      color: var(--bg);
+    }
+
+    .no-rooms {
+      text-align: center;
+      padding: 80px;
+      color: var(--muted);
+      font-size: 16px;
+      letter-spacing: 2px;
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+  <a href="/" class="nav-brand">LuxStay</a>
+  <div class="nav-links">
+    <a href="/rooms">Соби</a>
+    <div sec:authorize="isAuthenticated()">
+      <a href="/dashboard">Мои резервации</a>
+    </div>
+    <div sec:authorize="hasRole('ADMIN')">
+      <a href="/admin">Admin</a>
+    </div>
+    <div sec:authorize="!isAuthenticated()">
+      <a href="/login" class="btn-nav">Логирај се</a>
+    </div>
+    <div sec:authorize="isAuthenticated()">
+            <span style="color:var(--muted); font-size:13px;">
+                <span sec:authentication="name"></span>
+            </span>
+      <a href="/logout" class="btn-nav" style="margin-left:20px;">Одјави се</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Header -->
+<div class="page-header">
+  <h1 class="page-title">Наши соби</h1>
+  <div class="section-line"></div>
+</div>
+
+<!-- Search -->
+<div class="search-section">
+  <form class="search-box" th:action="@{/rooms}" method="get">
+    <div class="form-group">
+      <label class="form-label">Check-in</label>
+      <input type="date" name="checkIn" class="form-input"
+             th:value="${checkIn}">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Check-out</label>
+      <input type="date" name="checkOut" class="form-input"
+             th:value="${checkOut}">
+    </div>
+    <button type="submit" class="btn-search">
+      Пребарај
+    </button>
+  </form>
+</div>
+
+<!-- Rooms -->
+<div class="rooms-section">
+  <div th:if="${rooms.empty}" class="no-rooms">
+    <p>Нема достапни соби за овој период</p>
+  </div>
+
+  <div class="rooms-grid" th:unless="${rooms.empty}">
+    <div th:each="room : ${rooms}" class="room-card">
+      <div class="room-card-img">
+        <i class="fas fa-bed"></i>
+      </div>
+      <div class="room-card-body">
+        <h3 class="room-type" th:text="${room.roomType.typeName}"></h3>
+        <p class="room-desc" th:text="${room.roomType.description}"></p>
+
+        <div class="room-info">
+                    <span>
+                        <i class="fas fa-users"></i>
+                        До <span th:text="${room.roomType.capacity}"></span> лица
+                    </span>
+          <span>
+                        <i class="fas fa-layer-group"></i>
+                        Кат <span th:text="${room.floor}"></span>
+                    </span>
+        </div>
+
+        <div class="amenities">
+                    <span th:each="amenity : ${room.roomType.amenities}"
+                          class="amenity-tag"
+                          th:text="${amenity.amenityName}">
+                    </span>
+        </div>
+
+        <div class="room-footer">
+          <div class="room-price">
+            <span th:text="${room.roomType.basePrice}"></span>€
+            <span>/ ноќ</span>
+          </div>
+          <a th:href="@{/rooms/{id}/reserve(id=${room.roomId},checkIn=${checkIn},checkOut=${checkOut})}"
+             class="btn-reserve">Резервирај</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>© 2024 LuxStay Hotel — Сите права задржани</p>
+</footer>
+
+</body>
+</html>

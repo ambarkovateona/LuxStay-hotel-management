@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="mk" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>LuxStay — Admin</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 24px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .nav-links { display: flex; align-items: center; gap: 40px; }
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover, .nav-links a.active { color: var(--gold); }
+
+        .page-header { padding: 60px 60px 40px; }
+        .page-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 48px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .section-line {
+            width: 60px;
+            height: 1px;
+            background: var(--gold);
+            margin: 20px 0 40px;
+        }
+
+        .admin-container { padding: 0 60px 100px; }
+
+        .alert-success {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #10b981;
+            padding: 16px 20px;
+            font-size: 13px;
+            margin-bottom: 30px;
+        }
+        .alert-error {
+            background: rgba(220,38,38,0.1);
+            border: 1px solid rgba(220,38,38,0.3);
+            color: #ef4444;
+            padding: 16px 20px;
+            font-size: 13px;
+            margin-bottom: 30px;
+        }
+
+        /* Two col */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+
+        .section-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 24px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            color: var(--gold);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--card);
+            border: 1px solid var(--border);
+        }
+        thead { border-bottom: 1px solid var(--border); }
+        th {
+            padding: 14px 16px;
+            text-align: left;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 400;
+        }
+        td {
+            padding: 14px 16px;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border);
+            color: var(--text);
+        }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(212, 175, 55, 0.02); }
+
+        .badge {
+            padding: 4px 12px;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            border: 1px solid;
+        }
+        .badge-pending { border-color: #f59e0b; color: #f59e0b; }
+        .badge-confirmed { border-color: #10b981; color: #10b981; }
+        .badge-cancelled { border-color: #ef4444; color: #ef4444; }
+        .badge-completed { border-color: var(--muted); color: var(--muted); }
+
+        .rank-num {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            color: var(--gold);
+        }
+
+        .source-tag {
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            border: 1px solid var(--border);
+            padding: 2px 8px;
+            margin-left: 10px;
+            vertical-align: middle;
+        }
+
+        .status-select {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 4px 8px;
+            font-family: 'Jost', sans-serif;
+            font-size: 11px;
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+        .status-select:focus { border-color: var(--gold); }
+
+        .btn-update {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 4px 12px;
+            font-family: 'Jost', sans-serif;
+            font-size: 10px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 6px;
+        }
+        .btn-update:hover { background: var(--gold); color: var(--bg); }
+
+        .btn-link {
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 10px 24px;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.3s;
+            font-family: 'Jost', sans-serif;
+        }
+        .btn-link:hover { background: var(--gold); color: var(--bg); }
+
+        footer {
+            border-top: 1px solid var(--border);
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-brand">LuxStay</a>
+    <div class="nav-links">
+        <a href="/admin" class="active">Dashboard</a>
+        <a href="/admin/guests">Гости</a>
+        <a href="/admin/reports">Извештаи</a>
+        <span style="color:var(--muted); font-size:13px;">
+            <span sec:authentication="name"></span>
+        </span>
+        <a href="/logout" style="border:1px solid var(--gold); color:var(--gold); padding:10px 24px;">
+            Одјави се
+        </a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <h1 class="page-title">Admin Dashboard</h1>
+    <div class="section-line"></div>
+</div>
+
+<div class="admin-container">
+
+    <div th:if="${success}" class="alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+    <!-- Two col: Reservation_Details View + top_rooms Materialized View -->
+    <div class="two-col">
+
+        <!-- top_rooms — Materialized View -->
+        <div>
+            <div class="section-title">
+                Топ соби
+                <span class="source-tag">Materialized View</span>
+            </div>
+            <table>
+                <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Соба</th>
+                    <th>Тип</th>
+                    <th>Резервации</th>
+                    <th>Приходи</th>
+                    <th>Оценка</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row, i : ${topRooms}">
+                    <td><span class="rank-num" th:text="${i.index + 1}"></span></td>
+                    <td th:text="${row[1]}"></td>
+                    <td style="color:var(--muted); font-size:11px;" th:text="${row[0]}"></td>
+                    <td th:text="${row[2]}"></td>
+                    <td style="color:var(--gold);">
+                        <span th:text="${row[3] != null ? #numbers.formatDecimal(row[3], 1, 0) + ' €' : '—'}"></span>
+                    </td>
+                    <td th:text="${row[5] != null ? #numbers.formatDecimal(row[5], 1, 1) + ' ★' : '—'}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Брзи линкови -->
+        <div>
+            <div class="section-title">Навигација</div>
+            <table>
+                <tbody>
+                <tr>
+                    <td>
+                        <div style="font-size:13px; margin-bottom:4px;">Историја на гости</div>
+                        <div style="font-size:11px; color:var(--muted); letter-spacing:1px;">Guest_Reservation_History View</div>
+                    </td>
+                    <td style="text-align:right;">
+                        <a href="/admin/guests" class="btn-link">Отвори →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="font-size:13px; margin-bottom:4px;">Приходи по соба</div>
+                        <div style="font-size:11px; color:var(--muted); letter-spacing:1px;">hotel_revenue_report() Function</div>
+                    </td>
+                    <td style="text-align:right;">
+                        <a href="/admin/reports" class="btn-link">Отвори →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="font-size:13px; margin-bottom:4px;">Анализа на гости</div>
+                        <div style="font-size:11px; color:var(--muted); letter-spacing:1px;">guest_analysis_report() Function</div>
+                    </td>
+                    <td style="text-align:right;">
+                        <a href="/admin/reports" class="btn-link">Отвори →</a>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="font-size:13px; margin-bottom:4px;">Месечни извештаи</div>
+                        <div style="font-size:11px; color:var(--muted); letter-spacing:1px;">generate_monthly_report() Procedure</div>
+                    </td>
+                    <td style="text-align:right;">
+                        <a href="/admin/reports" class="btn-link">Отвори →</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Reservation_Details — View -->
+    <div>
+        <div class="section-header">
+            <div>
+                <span class="section-title" style="margin-bottom:0;">Резервации</span>
+                <span class="source-tag">Reservation_Details View</span>
+            </div>
+            <a href="/admin/reports" class="btn-link">Извештаи →</a>
+        </div>
+
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Гостин</th>
+                <th>Соба</th>
+                <th>Тип</th>
+                <th>Check-in</th>
+                <th>Check-out</th>
+                <th>Траење</th>
+                <th>Гости</th>
+                <th>Цена</th>
+                <th>Статус</th>
+                <th>Промени</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!--
+                Reservation_Details колони:
+                [0] reservation_id
+                [1] guest_name
+                [2] room_number
+                [3] room_type
+                [4] check_in_date
+                [5] check_out_date
+                [6] duration
+                [7] number_of_guests
+                [8] total_price
+                [9] status
+            -->
+            <tr th:each="row : ${reservationDetails}">
+                <td>#<span th:text="${row[0]}"></span></td>
+                <td th:text="${row[1]}"></td>
+                <td th:text="${row[2]}"></td>
+                <td style="color:var(--muted); font-size:11px;" th:text="${row[3]}"></td>
+                <td th:text="${row[4]}"></td>
+                <td th:text="${row[5]}"></td>
+                <td style="color:var(--muted);">
+                    <span th:text="${row[6]}"></span> ноќи
+                </td>
+                <td th:text="${row[7]}"></td>
+                <td style="color:var(--gold);">
+                    <span th:text="${row[8]}"></span> €
+                </td>
+                <td>
+                    <span th:class="${'badge badge-' + row[9]}"
+                          th:text="${row[9]}"></span>
+                </td>
+                <td>
+                    <form th:action="@{/admin/reservations/{id}/status(id=${row[0]})}"
+                          method="post"
+                          style="display:flex; align-items:center;">
+                        <select name="status" class="status-select">
+                            <option value="pending"   th:selected="${row[9]=='pending'}">Pending</option>
+                            <option value="confirmed" th:selected="${row[9]=='confirmed'}">Confirmed</option>
+                            <option value="completed" th:selected="${row[9]=='completed'}">Completed</option>
+                            <option value="cancelled" th:selected="${row[9]=='cancelled'}">Cancelled</option>
+                        </select>
+                        <button type="submit" class="btn-update">Зачувај</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<footer>
+    <p>© 2024 LuxStay Hotel — Сите права задржани</p>
+</footer>
+
+</body>
+</html>

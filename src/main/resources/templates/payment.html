@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="mk" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>LuxStay — Плаќање</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 24px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .nav-links { display: flex; align-items: center; gap: 40px; }
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--gold); }
+
+        .page-header {
+            padding: 60px 60px 40px;
+            text-align: center;
+        }
+        .page-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 48px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+        .section-line {
+            width: 60px;
+            height: 1px;
+            background: var(--gold);
+            margin: 0 auto;
+        }
+
+        .payment-container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 60px 100px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .info-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 30px;
+        }
+
+        .card-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            letter-spacing: 3px;
+            color: var(--gold);
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+        }
+        .info-row:last-child { border-bottom: none; }
+
+        .info-label {
+            color: var(--muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 11px;
+        }
+
+        .price-big {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            color: var(--gold);
+        }
+
+        .progress-bar-bg {
+            width: 100%;
+            height: 4px;
+            background: var(--border);
+            margin: 16px 0 8px;
+        }
+        .progress-bar-fill {
+            height: 4px;
+            background: var(--gold);
+            transition: width 0.3s;
+        }
+        .progress-text {
+            font-size: 11px;
+            color: var(--muted);
+            letter-spacing: 1px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+
+        .form-label {
+            display: block;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            font-family: 'Jost', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        .form-input:focus, .form-select:focus { border-color: var(--gold); }
+        .form-input.error { border-color: #ef4444; }
+
+        .field-error {
+            color: #ef4444;
+            font-size: 11px;
+            letter-spacing: 1px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        /* Картичка визуелизација */
+        .card-visual {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            border: 1px solid var(--gold);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            position: relative;
+            height: 160px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card-chip {
+            width: 40px;
+            height: 30px;
+            background: linear-gradient(135deg, var(--gold), #b8860b);
+            border-radius: 4px;
+        }
+        .card-number-display {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            letter-spacing: 4px;
+            color: var(--text);
+        }
+        .card-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+        .card-holder-display {
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+        }
+        .card-expiry-display {
+            font-size: 13px;
+            letter-spacing: 2px;
+            color: var(--muted);
+        }
+        .card-logo {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 20px;
+            color: var(--gold);
+            letter-spacing: 2px;
+        }
+
+        /* Картичка форма */
+        .card-fields {
+            display: none;
+            flex-direction: column;
+            gap: 0;
+        }
+        .card-fields.active { display: flex; }
+
+        .card-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .btn-submit {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 16px;
+            font-family: 'Jost', sans-serif;
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+        .btn-submit:hover { background: var(--gold); color: var(--bg); }
+        .btn-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Processing overlay */
+        .processing-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.85);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .processing-overlay.active { display: flex; }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            border: 2px solid var(--border);
+            border-top-color: var(--gold);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .processing-text {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 22px;
+            letter-spacing: 4px;
+            color: var(--gold);
+            text-transform: uppercase;
+        }
+        .processing-sub {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 2px;
+        }
+
+        .alert-error {
+            background: rgba(220,38,38,0.1);
+            border: 1px solid rgba(220,38,38,0.3);
+            color: #ef4444;
+            padding: 12px 16px;
+            font-size: 13px;
+        }
+        .alert-success {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #10b981;
+            padding: 12px 16px;
+            font-size: 13px;
+        }
+
+        .rata-info {
+            font-size: 12px;
+            color: var(--muted);
+            letter-spacing: 1px;
+            margin-top: 8px;
+        }
+
+        .disabled-form { opacity: 0.5; pointer-events: none; }
+
+        footer {
+            border-top: 1px solid var(--border);
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-brand">LuxStay</a>
+    <div class="nav-links">
+        <a href="/rooms">Соби</a>
+        <a href="/dashboard">Мои резервации</a>
+        <a href="/logout" style="border:1px solid var(--gold); color:var(--gold); padding:10px 24px;">
+            Одјави се
+        </a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <h1 class="page-title">Плаќање</h1>
+    <div class="section-line"></div>
+</div>
+
+<div class="payment-container">
+
+    <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+    <div th:if="${success}" class="alert-success" th:text="${success}"></div>
+
+    <!-- Резервација инфо -->
+    <div class="info-card">
+        <div class="card-title">Резервација #<span th:text="${reservation.reservationId}"></span></div>
+        <div class="info-row">
+            <span class="info-label">Соба</span>
+            <span th:text="${reservation.room.roomNumber + ' — ' + reservation.room.roomType.typeName}"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Период</span>
+            <span th:text="${reservation.checkInDate + ' → ' + reservation.checkOutDate}"></span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Вкупна цена</span>
+            <span class="price-big"><span th:text="${reservation.totalPrice}"></span> €</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Платено</span>
+            <span style="color:#10b981;"><span th:text="${paid}"></span> €</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Преостанато</span>
+            <span style="color:var(--gold); font-family:'Cormorant Garamond',serif; font-size:22px;">
+                <span th:text="${remaining}"></span> €
+            </span>
+        </div>
+        <div class="progress-bar-bg">
+            <div class="progress-bar-fill"
+                 th:style="${'width: ' + (paid / reservation.totalPrice * 100) + '%'}"></div>
+        </div>
+        <div class="progress-text">
+            Рата <span th:text="${paymentCount + 1}"></span> од 2
+        </div>
+    </div>
+
+    <!-- Форма -->
+    <div class="info-card" th:classappend="${paymentCount >= 2} ? 'disabled-form' : ''">
+        <div class="card-title">Направи уплата</div>
+
+        <div th:if="${paymentCount >= 2}" style="color:var(--muted); font-size:13px;">
+            Ги искористивте двете дозволени рати.
+        </div>
+
+        <form id="paymentForm"
+              th:action="@{/payments/pay/{id}(id=${reservation.reservationId})}"
+              method="post"
+              th:unless="${paymentCount >= 2}">
+
+            <div class="form-group">
+                <label class="form-label">Начин на плаќање</label>
+                <select name="paymentMethod" id="paymentMethod" class="form-select"
+                        required onchange="handleMethodChange(this.value)">
+                    <option value="credit_card">Кредитна картичка</option>
+                    <option value="cash">Готовина</option>
+                    <option value="paypal">PayPal</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Износ (€)</label>
+                <input type="number"
+                       name="amount"
+                       id="amount"
+                       class="form-input"
+                       step="0.01"
+                       min="1"
+                       th:max="${remaining}"
+                       th:placeholder="${'Максимум ' + remaining + ' €'}"
+                       required>
+                <div class="rata-info" th:if="${paymentCount == 0}">
+                    Можете да платите дел сега, а остатокот подоцна (максимум 2 рати вкупно).
+                </div>
+            </div>
+
+            <!-- Картичка визуелизација + полиња -->
+            <div class="card-fields active" id="cardFields">
+
+                <!-- Визуелна картичка -->
+                <div class="card-visual">
+                    <div class="card-logo">VISA</div>
+                    <div class="card-chip"></div>
+                    <div class="card-number-display" id="cardNumberDisplay">
+                        •••• •••• •••• ••••
+                    </div>
+                    <div class="card-bottom">
+                        <div>
+                            <div style="font-size:9px; color:var(--muted); letter-spacing:1px; margin-bottom:2px;">CARD HOLDER</div>
+                            <div class="card-holder-display" id="cardHolderDisplay">ВАШЕТО ИМЕ</div>
+                        </div>
+                        <div>
+                            <div style="font-size:9px; color:var(--muted); letter-spacing:1px; margin-bottom:2px;">EXPIRES</div>
+                            <div class="card-expiry-display" id="cardExpiryDisplay">MM/YY</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Полиња -->
+                <div class="form-group">
+                    <label class="form-label">Број на картичка</label>
+                    <input type="text"
+                           id="cardNumber"
+                           class="form-input"
+                           placeholder="1234 5678 9012 3456"
+                           maxlength="19"
+                           oninput="formatCardNumber(this)">
+                    <div class="field-error" id="cardNumberError">Внесете валиден 16-цифрен број</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Име на картичка</label>
+                    <input type="text"
+                           id="cardHolder"
+                           class="form-input"
+                           placeholder="MARKO MARKOVSKI"
+                           oninput="updateHolder(this)">
+                    <div class="field-error" id="cardHolderError">Внесете го вашето ime</div>
+                </div>
+
+                <div class="card-row">
+                    <div class="form-group">
+                        <label class="form-label">Рок на важење</label>
+                        <input type="text"
+                               id="cardExpiry"
+                               class="form-input"
+                               placeholder="MM/YY"
+                               maxlength="5"
+                               oninput="formatExpiry(this)">
+                        <div class="field-error" id="cardExpiryError">Внесете валиден датум</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">CVV</label>
+                        <input type="password"
+                               id="cardCvv"
+                               class="form-input"
+                               placeholder="•••"
+                               maxlength="3">
+                        <div class="field-error" id="cardCvvError">CVV мора да има 3 цифри</div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="btn-submit" onclick="handleSubmit()">
+                Потврди плаќање
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Processing overlay -->
+<div class="processing-overlay" id="processingOverlay">
+    <div class="spinner"></div>
+    <div class="processing-text">Обработка</div>
+    <div class="processing-sub">Ве молиме почекајте...</div>
+</div>
+
+<footer>
+    <p>© 2024 LuxStay Hotel — Сите права задржани</p>
+</footer>
+
+<script>
+    function handleMethodChange(value) {
+        const cardFields = document.getElementById('cardFields');
+        if (value === 'credit_card') {
+            cardFields.classList.add('active');
+        } else {
+            cardFields.classList.remove('active');
+            clearCardErrors();
+        }
+    }
+
+    function formatCardNumber(input) {
+        let val = input.value.replace(/\D/g, '').substring(0, 16);
+        input.value = val.replace(/(.{4})/g, '$1 ').trim();
+
+        // Ажурирај визуелна картичка
+        let display = val.padEnd(16, '•');
+        document.getElementById('cardNumberDisplay').textContent =
+            display.substring(0,4) + ' ' +
+            display.substring(4,8) + ' ' +
+            display.substring(8,12) + ' ' +
+            display.substring(12,16);
+
+        // Детектирај тип на картичка
+        const logo = document.querySelector('.card-logo');
+        if (val.startsWith('4')) logo.textContent = 'VISA';
+        else if (val.startsWith('5')) logo.textContent = 'MASTERCARD';
+        else if (val.startsWith('3')) logo.textContent = 'AMEX';
+        else logo.textContent = 'CARD';
+    }
+
+    function updateHolder(input) {
+        const val = input.value.toUpperCase() || 'ВАШЕТО ИМЕ';
+        document.getElementById('cardHolderDisplay').textContent = val;
+    }
+
+    function formatExpiry(input) {
+        let val = input.value.replace(/\D/g, '').substring(0, 4);
+        if (val.length >= 2) {
+            val = val.substring(0,2) + '/' + val.substring(2);
+        }
+        input.value = val;
+        document.getElementById('cardExpiryDisplay').textContent = val || 'MM/YY';
+    }
+
+    function clearCardErrors() {
+        ['cardNumber', 'cardHolder', 'cardExpiry', 'cardCvv'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.remove('error');
+                document.getElementById(id + 'Error').style.display = 'none';
+            }
+        });
+    }
+
+    function validateCard() {
+        let valid = true;
+
+        const num = document.getElementById('cardNumber').value.replace(/\s/g, '');
+        if (num.length !== 16) {
+            showError('cardNumber', 'cardNumberError'); valid = false;
+        } else hideError('cardNumber', 'cardNumberError');
+
+        const holder = document.getElementById('cardHolder').value.trim();
+        if (holder.length < 3) {
+            showError('cardHolder', 'cardHolderError'); valid = false;
+        } else hideError('cardHolder', 'cardHolderError');
+
+        const expiry = document.getElementById('cardExpiry').value;
+        if (!/^\d{2}\/\d{2}$/.test(expiry)) {
+            showError('cardExpiry', 'cardExpiryError'); valid = false;
+        } else hideError('cardExpiry', 'cardExpiryError');
+
+        const cvv = document.getElementById('cardCvv').value;
+        if (cvv.length !== 3) {
+            showError('cardCvv', 'cardCvvError'); valid = false;
+        } else hideError('cardCvv', 'cardCvvError');
+
+        return valid;
+    }
+
+    function showError(inputId, errorId) {
+        document.getElementById(inputId).classList.add('error');
+        document.getElementById(errorId).style.display = 'block';
+    }
+
+    function hideError(inputId, errorId) {
+        document.getElementById(inputId).classList.remove('error');
+        document.getElementById(errorId).style.display = 'none';
+    }
+
+    function handleSubmit() {
+        const method = document.getElementById('paymentMethod').value;
+
+        // Ако е картичка — валидирај
+        if (method === 'credit_card' && !validateCard()) {
+            return;
+        }
+
+        // Прикажи processing
+        document.getElementById('processingOverlay').classList.add('active');
+
+        // Симулирај 2 секунди processing па submit
+        setTimeout(() => {
+            document.getElementById('paymentForm').submit();
+        }, 2000);
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="mk" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+  <meta charset="UTF-8">
+  <title>LuxStay — Извештаи</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    nav {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      z-index: 100;
+      padding: 24px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(20, 20, 20, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-brand {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      color: var(--gold);
+      letter-spacing: 3px;
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 40px;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      transition: color 0.3s;
+    }
+
+    .nav-links a:hover { color: var(--gold); }
+    .nav-links a.active { color: var(--gold); }
+
+    .page-header {
+      padding: 60px 60px 40px;
+    }
+
+    .page-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 48px;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .section-line {
+      width: 60px;
+      height: 1px;
+      background: var(--gold);
+      margin: 20px 0 40px;
+    }
+
+    .reports-container {
+      padding: 0 60px 100px;
+    }
+
+    .report-section {
+      margin-bottom: 60px;
+    }
+
+    .report-title {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 28px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+      color: var(--gold);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: var(--card);
+      border: 1px solid var(--border);
+      margin-bottom: 40px;
+    }
+
+    thead { border-bottom: 1px solid var(--border); }
+
+    th {
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    td {
+      padding: 16px 20px;
+      font-size: 13px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(212, 175, 55, 0.02); }
+
+    .gold { color: var(--gold); }
+    .muted { color: var(--muted); }
+
+    .badge {
+      padding: 4px 12px;
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      border: 1px solid var(--gold);
+      color: var(--gold);
+    }
+
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav>
+  <a href="/" class="nav-brand">LuxStay</a>
+  <div class="nav-links">
+    <a href="/admin">Dashboard</a>
+    <a href="/admin/reports" class="active">Извештаи</a>
+    <span style="color:var(--muted); font-size:13px;">
+            <span sec:authentication="name"></span>
+        </span>
+    <a href="/logout"
+       style="border:1px solid var(--gold); color:var(--gold); padding:10px 24px;">
+      Одјави се
+    </a>
+  </div>
+</nav>
+
+<!-- Header -->
+<div class="page-header">
+  <h1 class="page-title">Извештаи</h1>
+  <div class="section-line"></div>
+</div>
+
+<div class="reports-container">
+
+  <!-- Revenue Report -->
+  <div class="report-section">
+    <h2 class="report-title">
+      <i class="fas fa-chart-bar"></i> Приходи по тип на соба
+    </h2>
+    <table>
+      <thead>
+      <tr>
+        <th>Тип на соба</th>
+        <th>Резервации</th>
+        <th>Вкупни приходи</th>
+        <th>Просечна цена</th>
+        <th>Просечен престој</th>
+        <th>% од вкупно</th>
+        <th>Ранг</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="row : ${revenueReport}">
+        <td th:text="${row[0]}"></td>
+        <td th:text="${row[1]}"></td>
+        <td class="gold">
+          <span th:text="${#numbers.formatDecimal(row[2], 1, 2)}"></span> €
+        </td>
+        <td th:text="${#numbers.formatDecimal(row[3], 1, 2)} + ' €'"></td>
+        <td th:text="${#numbers.formatDecimal(row[4], 1, 1)} + ' ноќи'"></td>
+        <td th:text="${#numbers.formatDecimal(row[5], 1, 1)} + ' %'"></td>
+        <td>
+          <span class="badge" th:text="'#' + ${row[6]}"></span>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Guest Report -->
+  <div class="report-section">
+    <h2 class="report-title">
+      <i class="fas fa-users"></i> Анализа на гости
+    </h2>
+    <table>
+      <thead>
+      <tr>
+        <th>Гостин</th>
+        <th>Националност</th>
+        <th>Резервации</th>
+        <th>Потрошено</th>
+        <th>Вкупно ноќи</th>
+        <th>Просечна оценка</th>
+        <th>Последна резервација</th>
+        <th>Категорија</th>
+        <th>Ранг</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="row : ${guestReport}">
+        <td th:text="${row[0]}"></td>
+        <td class="muted" th:text="${row[1]}"></td>
+        <td th:text="${row[2]}"></td>
+        <td class="gold">
+          <span th:text="${#numbers.formatDecimal(row[3], 1, 2)}"></span> €
+        </td>
+        <td th:text="${row[4]}"></td>
+        <td th:text="${row[5]}"></td>
+        <td class="muted" th:text="${row[6]}"></td>
+        <td>
+          <span class="badge" th:text="${row[7]}"></span>
+        </td>
+        <td>
+          <span class="badge" th:text="'#' + ${row[8]}"></span>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Monthly Report -->
+  <div class="report-section">
+    <h2 class="report-title">
+      <i class="fas fa-calendar"></i> Месечни извештаи
+    </h2>
+    <table>
+      <thead>
+      <tr>
+        <th>Месец</th>
+        <th>Година</th>
+        <th>Резервации</th>
+        <th>Приходи</th>
+        <th>Просечен престој</th>
+        <th>Откажувања</th>
+        <th>Најпопуларна соба</th>
+      </tr>
+      </thead>
+      <tbody>
+      <tr th:each="row : ${monthlyReport}">
+        <td th:text="${row[2]}"></td>
+        <td th:text="${row[3]}"></td>
+        <td th:text="${row[4]}"></td>
+        <td class="gold">
+          <span th:text="${#numbers.formatDecimal(row[5], 1, 2)}"></span> €
+        </td>
+        <td th:text="${#numbers.formatDecimal(row[6], 1, 1)} + ' ноќи'"></td>
+        <td th:text="${row[7]}"></td>
+        <td>
+          <span class="badge" th:text="${row[8]}"></span>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2024 LuxStay Hotel — Сите права задржани</p>
+</footer>
+
+</body>
+</html>

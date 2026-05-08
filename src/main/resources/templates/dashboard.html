@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="mk" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>LuxStay — Мои резервации</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        nav {
+            position: sticky;
+            top: 0;
+            width: 100%;
+            z-index: 100;
+            padding: 24px 60px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+        }
+        .nav-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            color: var(--gold);
+            letter-spacing: 3px;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+        .nav-links a {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover { color: var(--gold); }
+
+        .page-header { padding: 60px 60px 40px; }
+        .page-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 48px;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        .welcome-text { color: var(--muted); font-size: 13px; letter-spacing: 2px; }
+        .welcome-text span { color: var(--gold); }
+        .section-line {
+            width: 60px;
+            height: 1px;
+            background: var(--gold);
+            margin: 20px 0 40px;
+        }
+
+        .dashboard-container { padding: 0 60px 100px; max-width: 1200px; }
+
+        .alert-success {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #10b981;
+            padding: 16px 20px;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+        .alert-error {
+            background: rgba(220,38,38,0.1);
+            border: 1px solid rgba(220,38,38,0.3);
+            color: #ef4444;
+            padding: 16px 20px;
+            font-size: 13px;
+            letter-spacing: 1px;
+            margin-bottom: 30px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 60px;
+        }
+        .stat-card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 30px;
+        }
+        .stat-label {
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 12px;
+        }
+        .stat-value {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 40px;
+            color: var(--gold);
+        }
+
+        .table-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+
+        table { width: 100%; border-collapse: collapse; background: var(--card); border: 1px solid var(--border); }
+        thead { border-bottom: 1px solid var(--border); }
+        th {
+            padding: 16px 20px;
+            text-align: left;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            font-weight: 400;
+        }
+        td { padding: 16px 20px; font-size: 13px; border-bottom: 1px solid var(--border); color: var(--text); }
+        tr:last-child td { border-bottom: none; }
+        tr:hover td { background: rgba(212, 175, 55, 0.02); }
+
+        .badge { padding: 4px 12px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; border: 1px solid; }
+        .badge-pending { border-color: #f59e0b; color: #f59e0b; }
+        .badge-confirmed { border-color: #10b981; color: #10b981; }
+        .badge-cancelled { border-color: #ef4444; color: #ef4444; }
+        .badge-completed { border-color: var(--muted); color: var(--muted); }
+
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 6px 16px;
+            font-family: 'Jost', sans-serif;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-cancel:hover { background: #ef4444; color: white; }
+
+        .btn-pay {
+            background: transparent;
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 6px 16px;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+            margin-left: 8px;
+        }
+        .btn-pay:hover { background: var(--gold); color: var(--bg); }
+
+        .btn-review {
+            background: transparent;
+            border: 1px solid #10b981;
+            color: #10b981;
+            padding: 6px 16px;
+            font-family: 'Jost', sans-serif;
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-left: 8px;
+        }
+        .btn-review:hover { background: #10b981; color: white; }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.active { display: flex; }
+        .modal {
+            background: var(--card);
+            border: 1px solid var(--border);
+            padding: 40px;
+            width: 480px;
+        }
+        .modal-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 28px;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+        }
+        .modal-input {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            color: var(--text);
+            padding: 12px 16px;
+            font-family: 'Jost', sans-serif;
+            font-size: 14px;
+            outline: none;
+            margin-bottom: 20px;
+            transition: border-color 0.3s;
+            box-sizing: border-box;
+        }
+        .modal-input:focus { border-color: var(--gold); }
+        .modal-buttons { display: flex; gap: 12px; }
+        .btn-confirm-cancel {
+            flex: 1;
+            background: transparent;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            padding: 14px;
+            font-family: 'Jost', sans-serif;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-confirm-cancel:hover { background: #ef4444; color: white; }
+        .btn-close-modal {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 14px;
+            font-family: 'Jost', sans-serif;
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-close-modal:hover { border-color: var(--gold); color: var(--gold); }
+
+        /* Stars */
+        .star-rating { display: flex; gap: 8px; margin-top: 8px; margin-bottom: 20px; }
+        .star-rating input { display: none; }
+        .star-rating label {
+            font-size: 28px;
+            color: var(--border);
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+        .star-rating input:checked ~ label,
+        .star-rating label:hover,
+        .star-rating label:hover ~ label { color: var(--gold); }
+        .star-rating { flex-direction: row-reverse; justify-content: flex-end; }
+        .star-rating label:hover,
+        .star-rating label:hover ~ label { color: var(--gold); }
+        .star-rating input:checked ~ label { color: var(--gold); }
+
+        .form-label-modal {
+            display: block;
+            font-size: 11px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            color: var(--muted);
+            margin-bottom: 4px;
+        }
+
+        .no-reservations { text-align: center; padding: 80px; color: var(--muted); }
+        .no-reservations p { font-size: 16px; letter-spacing: 2px; margin-bottom: 24px; }
+        .btn-primary {
+            border: 1px solid var(--gold);
+            color: var(--gold);
+            padding: 14px 40px;
+            font-size: 12px;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .btn-primary:hover { background: var(--gold); color: var(--bg); }
+
+        footer {
+            border-top: 1px solid var(--border);
+            text-align: center;
+            padding: 40px;
+            color: var(--muted);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <a href="/" class="nav-brand">LuxStay</a>
+    <div class="nav-links">
+        <a href="/rooms">Соби</a>
+        <a href="/dashboard" style="color:var(--gold);">Мои резервации</a>
+        <span style="color:var(--muted); font-size:13px;">
+            <span sec:authentication="name"></span>
+        </span>
+        <a href="/logout" style="border:1px solid var(--gold); color:var(--gold); padding:10px 24px;">
+            Одјави се
+        </a>
+    </div>
+</nav>
+
+<div class="page-header">
+    <h1 class="page-title">Мои резервации</h1>
+    <p class="welcome-text">
+        Добредојдовте,
+        <span th:text="${guest.firstName + ' ' + guest.lastName}"></span>
+    </p>
+    <div class="section-line"></div>
+</div>
+
+<div class="dashboard-container">
+
+    <div th:if="${success}" class="alert-success" th:text="${success}"></div>
+    <div th:if="${error}" class="alert-error" th:text="${error}"></div>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Вкупно резервации</div>
+            <div class="stat-value" th:text="${reservations.size()}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Активни</div>
+            <div class="stat-value" th:text="${activeReservations}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Завршени</div>
+            <div class="stat-value" th:text="${completedReservations}">0</div>
+        </div>
+    </div>
+
+    <h2 class="table-title">Резервации</h2>
+
+    <div th:if="${reservations.empty}" class="no-reservations">
+        <p>Немате резервации</p>
+        <a href="/rooms" class="btn-primary">Резервирај соба</a>
+    </div>
+
+    <table th:unless="${reservations.empty}">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Соба</th>
+            <th>Тип</th>
+            <th>Check-in</th>
+            <th>Check-out</th>
+            <th>Цена</th>
+            <th>Статус</th>
+            <th>Акција</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="r : ${reservations}">
+            <td>#<span th:text="${r.reservationId}"></span></td>
+            <td th:text="${r.room.roomNumber}"></td>
+            <td th:text="${r.room.roomType.typeName}"></td>
+            <td th:text="${r.checkInDate}"></td>
+            <td th:text="${r.checkOutDate}"></td>
+            <td style="color:var(--gold);">
+                <span th:text="${r.totalPrice}"></span> €
+            </td>
+            <td>
+                <span th:class="${'badge badge-' + r.status}"
+                      th:text="${r.status}"></span>
+            </td>
+            <td>
+                <!-- Откажи — за pending и confirmed -->
+                <button th:if="${r.status.name()=='pending' || r.status.name()=='confirmed'}"
+                        class="btn-cancel"
+                        th:onclick="|openCancelModal(${r.reservationId})|">
+                    Откажи
+                </button>
+
+                <!-- Плати — само за pending -->
+                <a th:if="${r.status.name()=='pending'}"
+                   th:href="@{/payments/pay/{id}(id=${r.reservationId})}"
+                   class="btn-pay">
+                    Плати
+                </a>
+
+                <!-- Рецензија — само за completed без постоечка рецензија -->
+                <button th:if="${r.status.name()=='completed' && r.review == null}"
+                        class="btn-review"
+                        th:onclick="|openReviewModal(${r.reservationId})|">
+                    Рецензија
+                </button>
+
+                <!-- Веќе оценето -->
+                <span th:if="${r.status.name()=='completed' && r.review != null}"
+                      style="color:var(--gold); font-size:12px; letter-spacing:1px;">
+                    ★ <span th:text="${r.review.rating}"></span>/5
+                </span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal-overlay" id="cancelModal">
+    <div class="modal">
+        <h2 class="modal-title">Откажи резервација</h2>
+        <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">
+            Внесете причина за откажување:
+        </p>
+        <form method="post" id="cancelForm">
+            <input type="text" name="reason"
+                   class="modal-input"
+                   placeholder="Причина за откажување"
+                   required>
+            <div class="modal-buttons">
+                <button type="submit" class="btn-confirm-cancel">Потврди</button>
+                <button type="button" class="btn-close-modal" onclick="closeCancelModal()">Откажи</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div class="modal-overlay" id="reviewModal">
+    <div class="modal">
+        <h2 class="modal-title">Остави рецензија</h2>
+        <form method="post" id="reviewForm">
+
+            <label class="form-label-modal">Оцена</label>
+            <div class="star-rating">
+                <input type="radio" id="star5" name="rating" value="5" required>
+                <label for="star5">★</label>
+                <input type="radio" id="star4" name="rating" value="4">
+                <label for="star4">★</label>
+                <input type="radio" id="star3" name="rating" value="3">
+                <label for="star3">★</label>
+                <input type="radio" id="star2" name="rating" value="2">
+                <label for="star2">★</label>
+                <input type="radio" id="star1" name="rating" value="1">
+                <label for="star1">★</label>
+            </div>
+
+            <label class="form-label-modal">Коментар</label>
+            <textarea name="comment"
+                      class="modal-input"
+                      rows="4"
+                      placeholder="Споделете го вашето искуство..."
+                      style="resize:vertical;"></textarea>
+
+            <div class="modal-buttons">
+                <button type="submit" class="btn-confirm-cancel"
+                        style="border-color:#10b981; color:#10b981;">
+                    Поднеси
+                </button>
+                <button type="button" class="btn-close-modal" onclick="closeReviewModal()">
+                    Откажи
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<footer>
+    <p>© 2024 LuxStay Hotel — Сите права задржани</p>
+</footer>
+
+<script>
+    function openCancelModal(reservationId) {
+        document.getElementById('cancelModal').classList.add('active');
+        document.getElementById('cancelForm').action = '/reservations/cancel/' + reservationId;
+    }
+
+    function closeCancelModal() {
+        document.getElementById('cancelModal').classList.remove('active');
+    }
+
+    function openReviewModal(reservationId) {
+        document.getElementById('reviewModal').classList.add('active');
+        document.getElementById('reviewForm').action = '/reviews/add/' + reservationId;
+    }
+
+    function closeReviewModal() {
+        document.getElementById('reviewModal').classList.remove('active');
+    }
+</script>
+
+</body>
+</html>
